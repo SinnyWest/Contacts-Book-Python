@@ -1,0 +1,231 @@
+import sys
+
+
+class Contact(object):
+
+    def __init__(self, name, number, email):
+        self.name = name
+        self.number = number
+        self.email = email
+
+    def __str__(self):
+        return "Contact name: " + self.name
+
+    def __repr__(self):
+        return str(self)
+
+
+contacts = []
+
+
+def addContact():
+    print("Enter contact name:")
+    name = sys.stdin.readline().strip()
+    print("Enter contact number (press enter to skip):")
+    number = sys.stdin.readline().strip()
+    print("Enter contact email (press enter to skip):")
+    email = sys.stdin.readline().strip()
+
+    contacts.append(Contact(name, number, email))
+
+
+def findForUpdate():
+    print("Enter name of contact:")
+    name = sys.stdin.readline().strip()
+
+    checker = True
+
+    for contact in contacts:
+        if contact.name == name:
+            checker = False
+            updateContact(name)
+            break
+
+    if checker:
+        print(name + " is not in the contacts list. Add them to contacts? (Y/N)")
+        ans = sys.stdin.readline().strip()
+        ans = ans.lower()
+
+        if ans in ["yes", "y", "yeah",
+                   "yep", "yis"]:
+            addNamedContact(name)
+
+        if ans in ["no", "n", "nah",
+                   "nope", "na"]:
+            print("Yeah good call. /n")
+
+
+def addNamedContact(name):
+    print("Enter contact number (press enter to skip):")
+    number = sys.stdin.readline().strip()
+    print("Enter contact email (press enter to skip):")
+    email = sys.stdin.readline().strip()
+
+    contacts.append(Contact(name, number, email))
+
+
+def updateContact(name):
+    print("Update name, number, or email for " + name + "?")
+    selection = sys.stdin.readline().strip()
+    selection = selection.lower
+    checker = True
+
+    if selection in ["name", "nam"]:
+
+        checker = False
+
+        print("Enter a new name:" + "\n")
+        newName = sys.stdin.readline().strip()
+
+        for contact in contacts:
+
+            if contact.name == name:
+                contact.name = newName
+                break
+
+    if selection in ["number", "num"]:
+
+        checker = False
+
+        print("Enter a new number:" + "\n")
+        newNum = sys.stdin.readline().strip()
+
+        for contact in contacts:
+
+            if contact.name == name:
+                contact.number = newNum
+                break
+
+    if selection in ["email", "e-mail", "e mail"]:
+
+        checker = False
+
+        print("Enter a new email:" + "\n")
+        newEmail = sys.stdin.readline().strip()
+
+        for contact in contacts:
+
+            if contact.name == name:
+                contact.email = newEmail
+                break
+
+    if checker:
+        print("Invalid input. Try typing name, number, or email.")
+
+
+def deleteContact():
+    print("Enter index number of contact to delete:")
+    listContacts()
+    num = int(sys.stdin.readline().strip())
+    index = (num - 1)
+    del contacts[index]
+
+
+def listContacts():
+    i = 1
+    count = 0
+    for contact in contacts:
+        print("{}: {}".format(i, contact.name))
+        i = i + 1
+        count = count + 1
+
+    if count > 0:
+        print("(Select 'search' to look at a specific contact in more detail.) \n")
+
+    if count == 0:
+        print("Seems like you got no contacts. Yikes.")
+
+
+def searchByName():
+    print("Enter name of contact:")
+    name = sys.stdin.readline().strip()
+    checker = True
+
+    for contact in contacts:
+
+        if contact.name == name:
+            print("Name: " + name + "\n")
+            checker = False
+
+            if contact.number != "":
+                print("Number: " + contact.number + "\n")
+
+            if contact.email != "":
+                print("Email: " + contact.email + "\n")
+
+            break
+
+    if checker:
+        print(name + " is not in the contacts list. Add them to contacts? (Y/N)")
+        ans = sys.stdin.readline().strip()
+        ans = ans.lower()
+
+        if ans in ["yes", "y", "yeah",
+                   "yep", "yis"]:
+            addNamedContact(name)
+
+        if ans in ["no", "n", "nah",
+                   "nope", "na"]:
+            print("Yeah good call. /n")
+
+
+# Dictionary  of commands with key as user input,
+# calling method name as value
+commands = {
+    'add': addContact,
+    'update': findForUpdate,
+    'delete': deleteContact,
+    'list': listContacts,
+    'search': searchByName
+}
+# another way of setting things in dictionary:
+# commands["list"] = listContacts
+
+try:
+    with open('contactBook.txt') as fp:
+        lines = fp.readlines()
+        # contacts = [ Contact(x[0:-1]) for x in lines ]
+        for line in lines:
+            lineArray = line.split("|")
+            name = lineArray[0].strip()
+            number = lineArray[1].strip()
+            email = lineArray[2].strip()
+
+            newContact = Contact(name, number, email)
+            contacts.append(newContact)
+
+except FileNotFoundError as e:
+    print("No data file for contact book found.")
+
+finally:
+    pass  # pass passes over code/ignores it
+
+print("CONTACTS BOOK")
+print("=============================================")
+print("What do you want to do?")
+print("(add, update, delete, list, search)")
+
+action = sys.stdin.readline().strip()
+while action != "":
+    # if user input is a key in dictionary
+    # takes value of that key (method name)
+    # calls it, with ()
+    action = action.lower()
+    if action in commands:
+        commands[action]()
+
+    elif action == "quit":
+        break
+
+    print("What do you want to do?")
+    print("(add, update, delete, list, search)")
+    action = sys.stdin.readline().strip()
+
+with open("contactBook.txt", "w") as fp:
+    for contact in contacts:
+        fp.write(contact.name + "|")
+        if contact.number != "":
+            fp.write(contact.number + "|")
+        if contact.email != "":
+            fp.write(contact.email)
+        fp.write("\n")
